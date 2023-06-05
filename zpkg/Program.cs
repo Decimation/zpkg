@@ -1,4 +1,5 @@
 ﻿using CliWrap.Buffered;
+using zpkg.PackageManagers;
 
 namespace zpkg;
 
@@ -8,14 +9,24 @@ public static class Program
 	{
 		Console.WriteLine("Hello, World!");
 
-		var manager = BasePackageManager.All.Select(r => r.ListAsync()).ToList();
+		var q = Console.ReadLine();
+
+		var manager = BasePackageManager.All.Select(r =>
+		{
+			return r.SearchAsync(q);
+		}).ToList();
+
+		int i  = 0;
+		int cn = manager.Count;
 
 		while (manager.Any()) {
 			var o = (await Task.WhenAny(manager));
 			manager.Remove(o);
-			Console.WriteLine();
-			var r = (BufferedCommandResult) await o;
-			Console.WriteLine(r.StandardOutput);
+			Console.Title = $"\r{++i}/{cn}";
+			var r = await o;
+			Console.WriteLine(r.CommandResult.StandardOutput);
+			Console.WriteLine(r.CommandResult.StandardError);
 		}
+		
 	}
 }
